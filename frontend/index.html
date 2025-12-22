@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>چت‌بات RAG مینیمال</title>
+    <title>RAG Chat Workspace</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
       :root {
-        --bg: #0d1117;
-        --bg-soft: #0f1522;
-        --surface: #111826;
-        --surface-strong: #151e2f;
-        --surface-elevated: #1a2438;
-        --ink: #e9eef6;
-        --ink-muted: #a8b0c2;
-        --accent: #4cc2a9;
-        --accent-strong: #33a893;
-        --accent-soft: rgba(76, 194, 169, 0.14);
+        --bg: #070b12;
+        --bg-soft: #0a0f1a;
+        --surface: #0f1624;
+        --surface-strong: #121b2e;
+        --surface-elevated: #172236;
+        --ink: #eef3fb;
+        --ink-muted: #a9b3c7;
+        --accent: #63d2c1;
+        --accent-strong: #42b9a6;
+        --accent-soft: rgba(99, 210, 193, 0.16);
         --line: rgba(255, 255, 255, 0.08);
-        --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-        --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.25);
+        --shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+        --shadow-soft: 0 14px 30px rgba(0, 0, 0, 0.3);
       }
 
       * {
@@ -36,15 +36,17 @@
           radial-gradient(circle at 85% 10%, rgba(85, 132, 255, 0.18), transparent 50%),
           linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
         min-height: 100vh;
+        overflow: hidden;
       }
 
       .page {
         display: grid;
         grid-template-columns: 300px 1fr;
         gap: 28px;
-        max-width: 1360px;
+        height: 100vh;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 24px 20px 36px;
+        padding: 18px 20px 18px;
       }
 
       .topbar {
@@ -54,7 +56,7 @@
         justify-content: space-between;
         gap: 16px;
         padding: 16px 20px;
-        border-radius: 18px;
+        border-radius: 22px;
         background: rgba(17, 24, 38, 0.75);
         border: 1px solid var(--line);
         box-shadow: var(--shadow-soft);
@@ -69,7 +71,7 @@
       .brand-icon {
         width: 44px;
         height: 44px;
-        border-radius: 14px;
+        border-radius: 16px;
         background: linear-gradient(135deg, rgba(76, 194, 169, 0.3), rgba(85, 132, 255, 0.35));
         display: grid;
         place-items: center;
@@ -131,7 +133,7 @@
       .card {
         background: var(--surface);
         border: 1px solid var(--line);
-        border-radius: 18px;
+        border-radius: 22px;
         padding: 20px;
         box-shadow: var(--shadow);
         animation: riseIn 0.6s ease-out;
@@ -152,7 +154,7 @@
         width: 100%;
         padding: 10px;
         border: 1px dashed var(--line);
-        border-radius: 12px;
+        border-radius: 14px;
         background: var(--surface-strong);
         cursor: pointer;
         color: var(--ink-muted);
@@ -163,7 +165,7 @@
         min-height: 140px;
         padding: 12px 14px;
         border: 1px solid var(--line);
-        border-radius: 12px;
+        border-radius: 16px;
         background: var(--surface-elevated);
         color: var(--ink);
         font-family: "JetBrains Mono", monospace;
@@ -222,14 +224,14 @@
 
       .sidebar {
         position: sticky;
-        top: 24px;
+        top: 96px;
         align-self: start;
         display: flex;
         flex-direction: column;
         gap: 18px;
         background: var(--surface);
         border: 1px solid var(--line);
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 20px;
         box-shadow: var(--shadow-soft);
         height: fit-content;
@@ -255,7 +257,7 @@
         justify-content: space-between;
         gap: 8px;
         padding: 8px 10px;
-        border-radius: 12px;
+        border-radius: 14px;
         background: var(--surface-elevated);
         border: 1px solid var(--line);
         font-size: 0.9rem;
@@ -284,7 +286,7 @@
         min-height: 640px;
         background: rgba(17, 24, 38, 0.7);
         border: 1px solid var(--line);
-        border-radius: 24px;
+        border-radius: 26px;
         padding: 18px;
         box-shadow: var(--shadow);
         position: relative;
@@ -294,7 +296,7 @@
         display: flex;
         flex-direction: column;
         gap: 14px;
-        max-height: 520px;
+        max-height: calc(100vh - 360px);
         overflow: auto;
         padding-left: 6px;
       }
@@ -307,7 +309,7 @@
       .message-bubble {
         max-width: min(680px, 85%);
         padding: 12px 16px;
-        border-radius: 16px;
+        border-radius: 18px;
         border: 1px solid var(--line);
         background: var(--surface-elevated);
         box-shadow: var(--shadow-soft);
@@ -315,6 +317,16 @@
         line-height: 1.8;
         white-space: pre-wrap;
         unicode-bidi: plaintext;
+      }
+
+      .message-bubble .rtl {
+        direction: rtl;
+        text-align: right;
+      }
+
+      .message-bubble .ltr {
+        direction: ltr;
+        text-align: left;
       }
 
       .message-row.user {
@@ -355,7 +367,7 @@
       .send-btn {
         width: 56px;
         height: 56px;
-        border-radius: 16px;
+        border-radius: 18px;
         display: grid;
         place-items: center;
         padding: 0;
@@ -382,7 +394,7 @@
         background: #0b111b;
         border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: auto;
         direction: ltr;
       }
@@ -391,7 +403,7 @@
         font-family: "JetBrains Mono", monospace;
         background: rgba(255, 255, 255, 0.06);
         padding: 2px 6px;
-        border-radius: 6px;
+        border-radius: 10px;
         direction: ltr;
       }
 
@@ -458,7 +470,7 @@
           <div class="brand-icon">R</div>
           <div>
             <div class="tag">Self-hosted RAG</div>
-            <h1>چت‌بات دانش‌محور</h1>
+            <h1>RAG Chat Workspace</h1>
           </div>
         </div>
         <div class="pill">Local AI Stack</div>
@@ -466,17 +478,22 @@
       <aside class="sidebar">
         <div>
           <span class="tag">Document Vault</span>
-          <h2>فایل‌های بارگذاری‌شده</h2>
+          <h2>Uploaded files</h2>
         </div>
         <form @submit.prevent="handleUpload">
-          <label for="file-input">افزودن مدارک</label>
-          <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
-          <button type="submit">بارگذاری و پردازش</button>
-          <button type="button" class="ghost" @click="clearFiles">پاک کردن انتخاب</button>
-          <p class="status">{{ uploadStatus }}</p>
+          <button type="button" class="ghost" @click="toggleUploads">
+            {{ uploadsCollapsed ? 'Expand uploads' : 'Collapse uploads' }}
+          </button>
+          <div v-if="!uploadsCollapsed">
+            <label for="file-input">Add documents</label>
+            <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
+            <button type="submit">Upload & Ingest</button>
+            <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
+            <p class="status">{{ uploadStatus }}</p>
+          </div>
         </form>
         <div class="doc-list">
-          <div v-if="documents.length === 0" class="status">هنوز فایلی ندارید. یک یا چند سند بارگذاری کنید.</div>
+          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
           <div v-for="doc in documents" :key="doc.name" class="doc-item">
             <span class="doc-name">{{ doc.name }}</span>
             <span class="doc-status">{{ doc.status }}</span>
@@ -487,31 +504,36 @@
       <main>
         <header>
           <span class="tag">Self-hosted RAG</span>
-          <h1>دستیار گفتگو با اسناد شما</h1>
-          <p>اسناد را بارگذاری کنید و بعد سوال بپرسید. همه چیز روی سرور شما اجرا می‌شود.</p>
+          <h1>Chat with your documents</h1>
+          <p>Upload your files, then ask questions with full chat history. Everything runs on your server.</p>
         </header>
 
         <section class="chat-shell">
           <div class="response-title">
-            <h2>گفت‌وگو</h2>
-            <span class="chip">پاسخ‌های RAG</span>
+            <h2>Chat</h2>
+            <span class="chip">RAG Answers</span>
           </div>
           <div class="chat-history">
-            <div v-if="messages.length === 0" class="status">هنوز پیامی ندارید. اولین سوال را بپرسید.</div>
+            <div v-if="messages.length === 0" class="status">No messages yet. Ask your first question.</div>
             <div v-for="message in messages" :key="message.id" :class="['message-row', message.role]">
               <div class="message-bubble">
                 <div class="message-meta">
-                  <span>{{ message.role === 'user' ? 'کاربر' : 'دستیار' }}</span>
-                  <span>{{ message.role === 'user' ? 'پرسش' : 'پاسخ' }}</span>
+                  <span>{{ message.role === 'user' ? 'User' : 'Assistant' }}</span>
+                  <span>{{ message.role === 'user' ? 'Question' : 'Answer' }}</span>
                 </div>
-                <div v-if="message.role === 'assistant'" class="markdown" v-html="renderMarkdown(message.text)"></div>
-                <div v-else>{{ message.text }}</div>
+                <div
+                  v-if="message.role === 'assistant'"
+                  class="markdown"
+                  :class="getTextDirection(message.text)"
+                  v-html="renderMarkdown(message.text)"
+                ></div>
+                <div v-else :class="getTextDirection(message.text)">{{ message.text }}</div>
               </div>
             </div>
           </div>
           <form class="composer" @submit.prevent="handleChat">
-            <textarea v-model="query" placeholder="سوال خود را درباره اسناد بارگذاری‌شده بنویسید..."></textarea>
-            <button type="submit" class="send-btn" aria-label="ارسال">
+            <textarea v-model="query" placeholder="Ask a question about the uploaded documents..."></textarea>
+            <button type="submit" class="send-btn" aria-label="Send">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M3.4 20.2 21 12 3.4 3.8l.4 6.4 9.2 1.8-9.2 1.8-.4 6.4z" />
               </svg>

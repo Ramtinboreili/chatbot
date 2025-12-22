@@ -12,9 +12,13 @@ createApp({
       messages: [],
       documents: [],
       messageCounter: 0,
+      uploadsCollapsed: false,
     };
   },
   methods: {
+    getTextDirection(text) {
+      return /[\u0600-\u06FF]/.test(text || "") ? "rtl" : "ltr";
+    },
     renderMarkdown(text) {
       if (!text) {
         return "";
@@ -56,16 +60,19 @@ createApp({
       }
       this.uploadStatus = "";
     },
+    toggleUploads() {
+      this.uploadsCollapsed = !this.uploadsCollapsed;
+    },
     async handleUpload() {
       if (!this.selectedFiles.length) {
-        this.uploadStatus = "حداقل یک فایل انتخاب کنید.";
+        this.uploadStatus = "Choose at least one file.";
         return;
       }
 
-      this.uploadStatus = "در حال بارگذاری...";
+      this.uploadStatus = "Uploading...";
       this.selectedFiles.forEach((file) => {
         if (!this.documents.find((doc) => doc.name === file.name)) {
-          this.documents.push({ name: file.name, status: "در صف" });
+          this.documents.push({ name: file.name, status: "queued" });
         }
       });
 
@@ -73,7 +80,7 @@ createApp({
         const formData = new FormData();
         formData.append("file", file);
 
-        this.updateDocStatus(file.name, "در حال پردازش");
+        this.updateDocStatus(file.name, "processing");
         try {
           const res = await fetch(`${API_BASE}/api/ingest`, {
             method: "POST",
@@ -95,25 +102,25 @@ createApp({
           }
 
           const data = await res.json();
-          this.updateDocStatus(file.name, `انجام شد (${data.chunks})`);
+          this.updateDocStatus(file.name, `done (${data.chunks})`);
         } catch (error) {
-          this.updateDocStatus(file.name, "ناموفق");
+          this.updateDocStatus(file.name, "failed");
           this.uploadStatus = error.message;
           return;
         }
       }
 
-      this.uploadStatus = `${this.selectedFiles.length} فایل بارگذاری شد.`;
+      this.uploadStatus = `Uploaded ${this.selectedFiles.length} document(s).`;
       this.clearFiles();
     },
     async handleChat() {
       const trimmed = this.query.trim();
       if (!trimmed) {
-        this.chatStatus = "ابتدا یک سوال وارد کنید.";
+        this.chatStatus = "Type a question first.";
         return;
       }
 
-      this.chatStatus = "در حال پاسخ...";
+      this.chatStatus = "Thinking...";
       this.messages.push({
         id: `user-${this.messageCounter++}`,
         role: "user",
@@ -147,7 +154,7 @@ createApp({
         this.messages.push({
           id: `assistant-${this.messageCounter++}`,
           role: "assistant",
-          text: data.answer || "پاسخی دریافت نشد.",
+          text: data.answer || "No response.",
         });
         this.chatStatus = "";
         this.query = "";
