@@ -1,24 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Minimal RAG Chatbot</title>
+    <title>چت‌بات RAG مینیمال</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
       :root {
-        --bg: #f2efe8;
-        --surface: #fffaf2;
-        --surface-strong: #fff0dc;
-        --ink: #1f1a14;
-        --ink-muted: #4a4036;
-        --accent: #c85a3b;
-        --accent-strong: #a8462b;
-        --accent-soft: rgba(200, 90, 59, 0.12);
-        --line: #e1d6c4;
-        --shadow: 0 18px 40px rgba(31, 26, 20, 0.08);
-        --shadow-soft: 0 10px 24px rgba(31, 26, 20, 0.08);
+        --bg: #0d1117;
+        --bg-soft: #0f1522;
+        --surface: #111826;
+        --surface-strong: #151e2f;
+        --surface-elevated: #1a2438;
+        --ink: #e9eef6;
+        --ink-muted: #a8b0c2;
+        --accent: #4cc2a9;
+        --accent-strong: #33a893;
+        --accent-soft: rgba(76, 194, 169, 0.14);
+        --line: rgba(255, 255, 255, 0.08);
+        --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.25);
       }
 
       * {
@@ -27,18 +29,18 @@
 
       body {
         margin: 0;
-        font-family: "Space Grotesk", sans-serif;
+        font-family: "Vazirmatn", sans-serif;
         color: var(--ink);
         background:
-          radial-gradient(circle at 10% 15%, rgba(200, 90, 59, 0.18), transparent 48%),
-          radial-gradient(circle at 90% 20%, rgba(76, 126, 115, 0.2), transparent 42%),
-          var(--bg);
+          radial-gradient(circle at 10% 20%, rgba(76, 194, 169, 0.18), transparent 45%),
+          radial-gradient(circle at 85% 10%, rgba(85, 132, 255, 0.18), transparent 50%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
         min-height: 100vh;
       }
 
       .page {
         display: grid;
-        grid-template-columns: 280px 1fr;
+        grid-template-columns: 290px 1fr;
         gap: 28px;
         max-width: 1280px;
         margin: 0 auto;
@@ -55,7 +57,7 @@
       }
 
       .tag {
-        font-family: "Spline Sans Mono", monospace;
+        font-family: "JetBrains Mono", monospace;
         text-transform: uppercase;
         letter-spacing: 0.12em;
         font-size: 0.75rem;
@@ -107,6 +109,7 @@
         border-radius: 12px;
         background: var(--surface-strong);
         cursor: pointer;
+        color: var(--ink-muted);
       }
 
       textarea {
@@ -115,9 +118,11 @@
         padding: 12px 14px;
         border: 1px solid var(--line);
         border-radius: 12px;
-        background: #fff;
-        font-family: "Spline Sans Mono", monospace;
+        background: var(--surface-elevated);
+        color: var(--ink);
+        font-family: "JetBrains Mono", monospace;
         font-size: 0.95rem;
+        direction: rtl;
       }
 
       button {
@@ -126,11 +131,11 @@
         border: none;
         border-radius: 999px;
         background: var(--accent);
-        color: #fff;
+        color: #07131a;
         font-weight: 600;
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        box-shadow: 0 10px 18px rgba(200, 90, 59, 0.25);
+        box-shadow: 0 10px 18px rgba(76, 194, 169, 0.25);
       }
 
       button:hover {
@@ -150,8 +155,8 @@
         border-radius: 18px;
         border: 1px solid var(--line);
         padding: 18px;
-        background: #fff;
-        font-family: "Spline Sans Mono", monospace;
+        background: var(--surface-elevated);
+        font-family: "JetBrains Mono", monospace;
       }
 
       .response-title {
@@ -162,7 +167,7 @@
       }
 
       .chip {
-        background: #f0e4d3;
+        background: rgba(255, 255, 255, 0.08);
         color: var(--ink-muted);
         padding: 4px 10px;
         border-radius: 999px;
@@ -205,7 +210,7 @@
         gap: 8px;
         padding: 8px 10px;
         border-radius: 12px;
-        background: #fff;
+        background: var(--surface-elevated);
         border: 1px solid var(--line);
         font-size: 0.9rem;
       }
@@ -229,51 +234,64 @@
       .chat-shell {
         display: grid;
         grid-template-rows: auto 1fr auto;
-        gap: 16px;
+        gap: 14px;
+        min-height: 600px;
+        background: rgba(17, 24, 38, 0.6);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px;
       }
 
       .chat-history {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        max-height: 420px;
+        gap: 14px;
+        max-height: 520px;
         overflow: auto;
-        padding-right: 4px;
+        padding-left: 6px;
       }
 
-      .message {
-        padding: 12px 14px;
+      .message-row {
+        display: flex;
+        width: 100%;
+      }
+
+      .message-bubble {
+        max-width: min(680px, 85%);
+        padding: 12px 16px;
         border-radius: 16px;
         border: 1px solid var(--line);
-        background: #fff;
+        background: var(--surface-elevated);
         box-shadow: var(--shadow-soft);
-        font-family: "Spline Sans Mono", monospace;
+        font-family: "Vazirmatn", sans-serif;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        unicode-bidi: plaintext;
       }
 
-      .message.user {
-        align-self: flex-end;
-        background: var(--surface-strong);
-        border-color: #e6cdb3;
+      .message-row.user {
+        justify-content: flex-end;
       }
 
-      .message.assistant {
-        align-self: flex-start;
+      .message-row.user .message-bubble {
+        background: linear-gradient(135deg, rgba(76, 194, 169, 0.2), rgba(76, 194, 169, 0.05));
+        border-color: rgba(76, 194, 169, 0.35);
       }
 
-      .message-role {
-        display: block;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+      .message-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.75rem;
         color: var(--ink-muted);
-        margin-bottom: 6px;
-        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: 0.04em;
       }
 
       .composer {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto;
         gap: 12px;
-        align-items: flex-end;
+        align-items: end;
       }
 
       .composer textarea {
@@ -325,7 +343,7 @@
           position: static;
         }
         .composer {
-          flex-direction: column;
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -334,18 +352,18 @@
     <div id="app" class="page">
       <aside class="sidebar">
         <div>
-          <span class="tag">Document vault</span>
-          <h2>Uploaded files</h2>
+          <span class="tag">Document Vault</span>
+          <h2>فایل‌های بارگذاری‌شده</h2>
         </div>
         <form @submit.prevent="handleUpload">
-          <label for="file-input">Add documents</label>
+          <label for="file-input">افزودن مدارک</label>
           <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
-          <button type="submit">Upload & Ingest</button>
-          <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
+          <button type="submit">بارگذاری و پردازش</button>
+          <button type="button" class="ghost" @click="clearFiles">پاک کردن انتخاب</button>
           <p class="status">{{ uploadStatus }}</p>
         </form>
         <div class="doc-list">
-          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
+          <div v-if="documents.length === 0" class="status">هنوز فایلی ندارید. یک یا چند سند بارگذاری کنید.</div>
           <div v-for="doc in documents" :key="doc.name" class="doc-item">
             <span class="doc-name">{{ doc.name }}</span>
             <span class="doc-status">{{ doc.status }}</span>
@@ -356,25 +374,30 @@
       <main>
         <header>
           <span class="tag">Self-hosted RAG</span>
-          <h1>Minimal RAG Chatbot</h1>
-          <p>Drop files into the vault, then ask questions with full chat history. Everything runs on your server.</p>
+          <h1>چت‌بات RAG مینیمال</h1>
+          <p>اسناد را بارگذاری کنید و بعد سوال بپرسید. همه چیز روی سرور شما اجرا می‌شود.</p>
         </header>
 
-        <section class="card chat-shell">
+        <section class="chat-shell">
           <div class="response-title">
-            <h2>Chat</h2>
-            <span class="chip">RAG Answers</span>
+            <h2>گفت‌وگو</h2>
+            <span class="chip">پاسخ‌های RAG</span>
           </div>
           <div class="chat-history">
-            <div v-if="messages.length === 0" class="status">No messages yet. Ask your first question.</div>
-            <div v-for="message in messages" :key="message.id" :class="['message', message.role]">
-              <span class="message-role">{{ message.role }}</span>
-              <div>{{ message.text }}</div>
+            <div v-if="messages.length === 0" class="status">هنوز پیامی ندارید. اولین سوال را بپرسید.</div>
+            <div v-for="message in messages" :key="message.id" :class="['message-row', message.role]">
+              <div class="message-bubble">
+                <div class="message-meta">
+                  <span>{{ message.role === 'user' ? 'کاربر' : 'دستیار' }}</span>
+                  <span>{{ message.role === 'user' ? 'پرسش' : 'پاسخ' }}</span>
+                </div>
+                <div>{{ message.text }}</div>
+              </div>
             </div>
           </div>
           <form class="composer" @submit.prevent="handleChat">
-            <textarea v-model="query" placeholder="Ask a question about the uploaded documents..."></textarea>
-            <button type="submit">Send</button>
+            <textarea v-model="query" placeholder="سوال خود را درباره اسناد بارگذاری‌شده بنویسید..."></textarea>
+            <button type="submit">ارسال</button>
           </form>
           <p class="status">{{ chatStatus }}</p>
         </section>

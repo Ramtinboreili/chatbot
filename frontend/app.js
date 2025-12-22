@@ -18,7 +18,7 @@ createApp({
     onFileChange(event) {
       this.selectedFiles = Array.from(event.target.files || []);
       if (this.selectedFiles.length) {
-        this.uploadStatus = `${this.selectedFiles.length} file(s) selected.`;
+        this.uploadStatus = `${this.selectedFiles.length} فایل انتخاب شد.`;
       }
     },
     clearFiles() {
@@ -31,14 +31,14 @@ createApp({
     },
     async handleUpload() {
       if (!this.selectedFiles.length) {
-        this.uploadStatus = "Choose at least one file.";
+        this.uploadStatus = "حداقل یک فایل انتخاب کنید.";
         return;
       }
 
-      this.uploadStatus = "Uploading...";
+      this.uploadStatus = "در حال بارگذاری...";
       this.selectedFiles.forEach((file) => {
         if (!this.documents.find((doc) => doc.name === file.name)) {
-          this.documents.push({ name: file.name, status: "queued" });
+          this.documents.push({ name: file.name, status: "در صف" });
         }
       });
 
@@ -46,7 +46,7 @@ createApp({
         const formData = new FormData();
         formData.append("file", file);
 
-        this.updateDocStatus(file.name, "uploading");
+        this.updateDocStatus(file.name, "در حال پردازش");
         try {
           const res = await fetch(`${API_BASE}/api/ingest`, {
             method: "POST",
@@ -68,25 +68,25 @@ createApp({
           }
 
           const data = await res.json();
-          this.updateDocStatus(file.name, `done (${data.chunks})`);
+          this.updateDocStatus(file.name, `انجام شد (${data.chunks})`);
         } catch (error) {
-          this.updateDocStatus(file.name, "failed");
+          this.updateDocStatus(file.name, "ناموفق");
           this.uploadStatus = error.message;
           return;
         }
       }
 
-      this.uploadStatus = `Uploaded ${this.selectedFiles.length} document(s).`;
+      this.uploadStatus = `${this.selectedFiles.length} فایل بارگذاری شد.`;
       this.clearFiles();
     },
     async handleChat() {
       const trimmed = this.query.trim();
       if (!trimmed) {
-        this.chatStatus = "Type a question first.";
+        this.chatStatus = "ابتدا یک سوال وارد کنید.";
         return;
       }
 
-      this.chatStatus = "Thinking...";
+      this.chatStatus = "در حال پاسخ...";
       this.messages.push({
         id: `user-${this.messageCounter++}`,
         role: "user",
@@ -120,7 +120,7 @@ createApp({
         this.messages.push({
           id: `assistant-${this.messageCounter++}`,
           role: "assistant",
-          text: data.answer || "No response",
+          text: data.answer || "پاسخی دریافت نشد.",
         });
         this.chatStatus = "";
         this.query = "";
