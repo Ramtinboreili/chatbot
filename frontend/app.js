@@ -1,74 +1,79 @@
 const API_BASE = window.API_BASE || "http://localhost:8000";
 
-const uploadForm = document.getElementById("upload-form");
-const fileInput = document.getElementById("file-input");
-const uploadStatus = document.getElementById("upload-status");
+const { createApp } = Vue;
 
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-const chatStatus = document.getElementById("chat-status");
-const responseDiv = document.getElementById("response");
+createApp({
+  data() {
+    return {
+      selectedFile: null,
+      uploadStatus: "",
+      query: "",
+      chatStatus: "",
+      responseText: "",
+    };
+  },
+  methods: {
+    onFileChange(event) {
+      this.selectedFile = event.target.files[0] || null;
+    },
+    async handleUpload() {
+      if (!this.selectedFile) {
+        this.uploadStatus = "Choose a file first.";
+        return;
+      }
 
-uploadForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const file = fileInput.files[0];
-  if (!file) {
-    uploadStatus.textContent = "Choose a file first.";
-    return;
-  }
+      this.uploadStatus = "Uploading...";
 
-  uploadStatus.textContent = "Uploading...";
+      const formData = new FormData();
+      formData.append("file", this.selectedFile);
 
-  const formData = new FormData();
-  formData.append("file", file);
+      try {
+        const res = await fetch(`${API_BASE}/api/ingest`, {
+          method: "POST",
+          body: formData,
+        });
 
-  try {
-    const res = await fetch(`${API_BASE}/api/ingest`, {
-      method: "POST",
-      body: formData,
-    });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.detail || "Upload failed");
+        }
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.detail || "Upload failed");
-    }
+        const data = await res.json();
+        this.uploadStatus = `Ingested ${data.filename} with ${data.chunks} chunks.`;
+      } catch (error) {
+        this.uploadStatus = error.message;
+      }
+    },
+    async handleChat() {
+      const trimmed = this.query.trim();
+      if (!trimmed) {
+        this.chatStatus = "Type a question first.";
+        return;
+      }
 
-    const data = await res.json();
-    uploadStatus.textContent = `Ingested ${data.filename} with ${data.chunks} chunks.`;
-  } catch (error) {
-    uploadStatus.textContent = error.message;
-  }
-});
+      this.chatStatus = "Thinking...";
+      this.responseText = "";
 
-chatForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const query = chatInput.value.trim();
-  if (!query) {
-    chatStatus.textContent = "Type a question first.";
-    return;
-  }
+      try {
+        const res = await fetch(`${API_BASE}/api/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: trimmed }),
+        });
 
-  chatStatus.textContent = "Thinking...";
-  responseDiv.textContent = "";
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.detail || "Chat failed");
+        }
 
-  try {
-    const res = await fetch(`${API_BASE}/api/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query }),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.detail || "Chat failed");
-    }
-
-    const data = await res.json();
-    responseDiv.textContent = data.answer || "No response";
-    chatStatus.textContent = "";
-  } catch (error) {
-    chatStatus.textContent = error.message;
-  }
-});
+        const data = await res.json();
+        this.responseText = data.answer || "No response";
+        this.chatStatus = "";
+      } catch (error) {
+        this.chatStatus = error.message;
+      }
+    },
+  },
+}).mount("#app");

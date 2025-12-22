@@ -5,65 +5,236 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Minimal RAG Chatbot</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap");
+
+      :root {
+        --bg: #f5f1e8;
+        --surface: #fff8ee;
+        --surface-strong: #fff1db;
+        --ink: #1f1a14;
+        --ink-muted: #4a4036;
+        --accent: #c85a3b;
+        --accent-strong: #a8462b;
+        --line: #e1d6c4;
+        --shadow: 0 18px 40px rgba(31, 26, 20, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        margin: 32px;
-        max-width: 900px;
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 15%, rgba(200, 90, 59, 0.18), transparent 48%),
+          radial-gradient(circle at 90% 20%, rgba(76, 126, 115, 0.2), transparent 42%),
+          var(--bg);
+        min-height: 100vh;
       }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 20px 80px;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 36px;
+        animation: fadeIn 0.7s ease-out;
+      }
+
+      .tag {
+        font-family: "Spline Sans Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.75rem;
+        color: var(--ink-muted);
+      }
+
       h1 {
-        margin-bottom: 8px;
+        font-size: clamp(2.4rem, 4vw, 3.4rem);
+        margin: 0;
       }
-      section {
+
+      p {
+        margin: 0;
+        color: var(--ink-muted);
+        max-width: 620px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
         margin-bottom: 24px;
       }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        animation: riseIn 0.6s ease-out;
+      }
+
+      .card h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        background: var(--surface-strong);
+        cursor: pointer;
+      }
+
       textarea {
         width: 100%;
-        min-height: 120px;
+        min-height: 140px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        font-family: "Spline Sans Mono", monospace;
+        font-size: 0.95rem;
       }
-      #response {
-        white-space: pre-wrap;
-        border: 1px solid #ddd;
-        padding: 12px;
-        min-height: 120px;
-        background: #fafafa;
+
+      button {
+        margin-top: 12px;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        box-shadow: 0 10px 18px rgba(200, 90, 59, 0.25);
       }
+
+      button:hover {
+        background: var(--accent-strong);
+        transform: translateY(-2px);
+      }
+
       .status {
         font-size: 0.9rem;
-        color: #555;
-      }
-      button {
-        padding: 8px 12px;
+        color: var(--ink-muted);
         margin-top: 8px;
+      }
+
+      .response {
+        min-height: 180px;
+        white-space: pre-wrap;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        padding: 18px;
+        background: #fff;
+        font-family: "Spline Sans Mono", monospace;
+      }
+
+      .response-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .chip {
+        background: #f0e4d3;
+        color: var(--ink-muted);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes riseIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding: 32px 16px 60px;
+        }
+        button {
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Minimal RAG Chatbot</h1>
-    <p>Upload a document, then ask questions.</p>
+    <div id="app" class="page">
+      <header>
+        <span class="tag">Self-hosted RAG</span>
+        <h1>Minimal RAG Chatbot</h1>
+        <p>Drop a file, generate embeddings, and ask questions against your local knowledge base. Simple, fast, and fully self-hosted.</p>
+      </header>
 
-    <section>
-      <h2>1) Upload document</h2>
-      <form id="upload-form">
-        <input type="file" id="file-input" accept=".txt,.md,.pdf" required />
-        <button type="submit">Upload & Ingest</button>
-      </form>
-      <p class="status" id="upload-status"></p>
-    </section>
+      <div class="grid">
+        <section class="card">
+          <h2>1) Upload document</h2>
+          <form @submit.prevent="handleUpload">
+            <label for="file-input">File (txt, md, pdf)</label>
+            <input type="file" id="file-input" accept=".txt,.md,.pdf" @change="onFileChange" required />
+            <button type="submit">Upload & Ingest</button>
+          </form>
+          <p class="status">{{ uploadStatus }}</p>
+        </section>
 
-    <section>
-      <h2>2) Ask a question</h2>
-      <form id="chat-form">
-        <textarea id="chat-input" placeholder="Ask a question about the uploaded document..."></textarea>
-        <button type="submit">Ask</button>
-      </form>
-      <p class="status" id="chat-status"></p>
-    </section>
+        <section class="card">
+          <h2>2) Ask a question</h2>
+          <form @submit.prevent="handleChat">
+            <label for="chat-input">Your question</label>
+            <textarea id="chat-input" v-model="query" placeholder="Ask a question about the uploaded document..."></textarea>
+            <button type="submit">Ask</button>
+          </form>
+          <p class="status">{{ chatStatus }}</p>
+        </section>
+      </div>
 
-    <section>
-      <h2>Response</h2>
-      <div id="response"></div>
-    </section>
+      <section class="card">
+        <div class="response-title">
+          <h2>Response</h2>
+          <span class="chip">RAG Answer</span>
+        </div>
+        <div class="response">{{ responseText }}</div>
+      </section>
+    </div>
 
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
