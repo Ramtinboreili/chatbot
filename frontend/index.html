@@ -40,11 +40,57 @@
 
       .page {
         display: grid;
-        grid-template-columns: 290px 1fr;
+        grid-template-columns: 300px 1fr;
         gap: 28px;
-        max-width: 1280px;
+        max-width: 1360px;
         margin: 0 auto;
-        padding: 36px 20px 60px;
+        padding: 24px 20px 36px;
+      }
+
+      .topbar {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        border-radius: 18px;
+        background: rgba(17, 24, 38, 0.75);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(76, 194, 169, 0.3), rgba(85, 132, 255, 0.35));
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .brand h1 {
+        font-size: 1.4rem;
+        margin: 0;
+      }
+
+      .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: rgba(76, 194, 169, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(76, 194, 169, 0.35);
       }
 
       header {
@@ -52,7 +98,7 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-bottom: 18px;
+        margin: 10px 0 6px;
         animation: fadeIn 0.7s ease-out;
       }
 
@@ -235,11 +281,13 @@
         display: grid;
         grid-template-rows: auto 1fr auto;
         gap: 14px;
-        min-height: 600px;
-        background: rgba(17, 24, 38, 0.6);
+        min-height: 640px;
+        background: rgba(17, 24, 38, 0.7);
         border: 1px solid var(--line);
-        border-radius: 22px;
+        border-radius: 24px;
         padding: 18px;
+        box-shadow: var(--shadow);
+        position: relative;
       }
 
       .chat-history {
@@ -289,14 +337,66 @@
 
       .composer {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 1fr 56px;
         gap: 12px;
         align-items: end;
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(17, 24, 38, 0.1), rgba(17, 24, 38, 0.9));
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
       }
 
       .composer textarea {
         flex: 1;
         min-height: 80px;
+      }
+
+      .send-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+      }
+
+      .send-btn svg {
+        width: 22px;
+        height: 22px;
+        fill: #07131a;
+      }
+
+      .markdown h1,
+      .markdown h2,
+      .markdown h3 {
+        margin: 8px 0;
+      }
+
+      .markdown p {
+        margin: 6px 0;
+        color: var(--ink);
+      }
+
+      .markdown pre {
+        background: #0b111b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 12px;
+        border-radius: 12px;
+        overflow: auto;
+        direction: ltr;
+      }
+
+      .markdown code {
+        font-family: "JetBrains Mono", monospace;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 6px;
+        border-radius: 6px;
+        direction: ltr;
+      }
+
+      .markdown ul {
+        padding-right: 18px;
       }
 
       .ghost {
@@ -345,11 +445,24 @@
         .composer {
           grid-template-columns: 1fr;
         }
+        .send-btn {
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
     <div id="app" class="page">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-icon">R</div>
+          <div>
+            <div class="tag">Self-hosted RAG</div>
+            <h1>چت‌بات دانش‌محور</h1>
+          </div>
+        </div>
+        <div class="pill">Local AI Stack</div>
+      </div>
       <aside class="sidebar">
         <div>
           <span class="tag">Document Vault</span>
@@ -374,7 +487,7 @@
       <main>
         <header>
           <span class="tag">Self-hosted RAG</span>
-          <h1>چت‌بات RAG مینیمال</h1>
+          <h1>دستیار گفتگو با اسناد شما</h1>
           <p>اسناد را بارگذاری کنید و بعد سوال بپرسید. همه چیز روی سرور شما اجرا می‌شود.</p>
         </header>
 
@@ -391,13 +504,18 @@
                   <span>{{ message.role === 'user' ? 'کاربر' : 'دستیار' }}</span>
                   <span>{{ message.role === 'user' ? 'پرسش' : 'پاسخ' }}</span>
                 </div>
-                <div>{{ message.text }}</div>
+                <div v-if="message.role === 'assistant'" class="markdown" v-html="renderMarkdown(message.text)"></div>
+                <div v-else>{{ message.text }}</div>
               </div>
             </div>
           </div>
           <form class="composer" @submit.prevent="handleChat">
             <textarea v-model="query" placeholder="سوال خود را درباره اسناد بارگذاری‌شده بنویسید..."></textarea>
-            <button type="submit">ارسال</button>
+            <button type="submit" class="send-btn" aria-label="ارسال">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3.4 20.2 21 12 3.4 3.8l.4 6.4 9.2 1.8-9.2 1.8-.4 6.4z" />
+              </svg>
+            </button>
           </form>
           <p class="status">{{ chatStatus }}</p>
         </section>
