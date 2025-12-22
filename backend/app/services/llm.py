@@ -10,7 +10,10 @@ def generate_response(system_prompt: str, user_prompt: str) -> str:
     if not LLM_API_BASE_URL:
         raise ValueError("LLM_API_BASE_URL is not set")
 
-    url = f"{LLM_API_BASE_URL}/chat/completions"
+    base = LLM_API_BASE_URL
+    if base.endswith("/chat/completions"):
+        base = base.rsplit("/chat/completions", 1)[0]
+    url = f"{base}/chat/completions"
     headers = {
         "Content-Type": "application/json",
     }

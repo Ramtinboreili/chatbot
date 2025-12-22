@@ -34,8 +34,17 @@ createApp({
         });
 
         if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.detail || "Upload failed");
+          const errorText = await res.text();
+          let message = "Upload failed";
+          try {
+            const errorJson = JSON.parse(errorText);
+            message = errorJson.detail || message;
+          } catch {
+            if (errorText) {
+              message = errorText;
+            }
+          }
+          throw new Error(message);
         }
 
         const data = await res.json();
@@ -64,8 +73,17 @@ createApp({
         });
 
         if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.detail || "Chat failed");
+          const errorText = await res.text();
+          let message = "Chat failed";
+          try {
+            const errorJson = JSON.parse(errorText);
+            message = errorJson.detail || message;
+          } catch {
+            if (errorText) {
+              message = errorText;
+            }
+          }
+          throw new Error(message);
         }
 
         const data = await res.json();
