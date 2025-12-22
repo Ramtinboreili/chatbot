@@ -8,15 +8,17 @@
       @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap");
 
       :root {
-        --bg: #f5f1e8;
-        --surface: #fff8ee;
-        --surface-strong: #fff1db;
+        --bg: #f2efe8;
+        --surface: #fffaf2;
+        --surface-strong: #fff0dc;
         --ink: #1f1a14;
         --ink-muted: #4a4036;
         --accent: #c85a3b;
         --accent-strong: #a8462b;
+        --accent-soft: rgba(200, 90, 59, 0.12);
         --line: #e1d6c4;
         --shadow: 0 18px 40px rgba(31, 26, 20, 0.08);
+        --shadow-soft: 0 10px 24px rgba(31, 26, 20, 0.08);
       }
 
       * {
@@ -35,16 +37,20 @@
       }
 
       .page {
-        max-width: 1100px;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 28px;
+        max-width: 1280px;
         margin: 0 auto;
-        padding: 48px 20px 80px;
+        padding: 36px 20px 60px;
       }
 
       header {
+        grid-column: 2 / -1;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-bottom: 36px;
+        margin-bottom: 18px;
         animation: fadeIn 0.7s ease-out;
       }
 
@@ -163,6 +169,125 @@
         font-size: 0.75rem;
       }
 
+      .sidebar {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--shadow-soft);
+        height: fit-content;
+      }
+
+      .sidebar h2 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .doc-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 280px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .doc-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 0.9rem;
+      }
+
+      .doc-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .doc-status {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .chat-shell {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 16px;
+      }
+
+      .chat-history {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 420px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .message {
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: var(--shadow-soft);
+        font-family: "Spline Sans Mono", monospace;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        background: var(--surface-strong);
+        border-color: #e6cdb3;
+      }
+
+      .message.assistant {
+        align-self: flex-start;
+      }
+
+      .message-role {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ink-muted);
+        margin-bottom: 6px;
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .composer {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .composer textarea {
+        flex: 1;
+        min-height: 80px;
+      }
+
+      .ghost {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        box-shadow: none;
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -187,51 +312,73 @@
 
       @media (max-width: 720px) {
         .page {
+          grid-template-columns: 1fr;
           padding: 32px 16px 60px;
         }
         button {
           width: 100%;
+        }
+        header {
+          grid-column: 1 / -1;
+        }
+        .sidebar {
+          position: static;
+        }
+        .composer {
+          flex-direction: column;
         }
       }
     </style>
   </head>
   <body>
     <div id="app" class="page">
-      <header>
-        <span class="tag">Self-hosted RAG</span>
-        <h1>Minimal RAG Chatbot</h1>
-        <p>Drop a file, generate embeddings, and ask questions against your local knowledge base. Simple, fast, and fully self-hosted.</p>
-      </header>
-
-      <div class="grid">
-        <section class="card">
-          <h2>1) Upload document</h2>
-          <form @submit.prevent="handleUpload">
-            <label for="file-input">File (txt, md, pdf)</label>
-            <input type="file" id="file-input" accept=".txt,.md,.pdf" @change="onFileChange" required />
-            <button type="submit">Upload & Ingest</button>
-          </form>
+      <aside class="sidebar">
+        <div>
+          <span class="tag">Document vault</span>
+          <h2>Uploaded files</h2>
+        </div>
+        <form @submit.prevent="handleUpload">
+          <label for="file-input">Add documents</label>
+          <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
+          <button type="submit">Upload & Ingest</button>
+          <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
           <p class="status">{{ uploadStatus }}</p>
-        </section>
+        </form>
+        <div class="doc-list">
+          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
+          <div v-for="doc in documents" :key="doc.name" class="doc-item">
+            <span class="doc-name">{{ doc.name }}</span>
+            <span class="doc-status">{{ doc.status }}</span>
+          </div>
+        </div>
+      </aside>
 
-        <section class="card">
-          <h2>2) Ask a question</h2>
-          <form @submit.prevent="handleChat">
-            <label for="chat-input">Your question</label>
-            <textarea id="chat-input" v-model="query" placeholder="Ask a question about the uploaded document..."></textarea>
-            <button type="submit">Ask</button>
+      <main>
+        <header>
+          <span class="tag">Self-hosted RAG</span>
+          <h1>Minimal RAG Chatbot</h1>
+          <p>Drop files into the vault, then ask questions with full chat history. Everything runs on your server.</p>
+        </header>
+
+        <section class="card chat-shell">
+          <div class="response-title">
+            <h2>Chat</h2>
+            <span class="chip">RAG Answers</span>
+          </div>
+          <div class="chat-history">
+            <div v-if="messages.length === 0" class="status">No messages yet. Ask your first question.</div>
+            <div v-for="message in messages" :key="message.id" :class="['message', message.role]">
+              <span class="message-role">{{ message.role }}</span>
+              <div>{{ message.text }}</div>
+            </div>
+          </div>
+          <form class="composer" @submit.prevent="handleChat">
+            <textarea v-model="query" placeholder="Ask a question about the uploaded documents..."></textarea>
+            <button type="submit">Send</button>
           </form>
           <p class="status">{{ chatStatus }}</p>
         </section>
-      </div>
-
-      <section class="card">
-        <div class="response-title">
-          <h2>Response</h2>
-          <span class="chip">RAG Answer</span>
-        </div>
-        <div class="response">{{ responseText }}</div>
-      </section>
+      </main>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

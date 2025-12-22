@@ -5,53 +5,79 @@ const { createApp } = Vue;
 createApp({
   data() {
     return {
-      selectedFile: null,
+      selectedFiles: [],
       uploadStatus: "",
       query: "",
       chatStatus: "",
-      responseText: "",
+      messages: [],
+      documents: [],
+      messageCounter: 0,
     };
   },
   methods: {
     onFileChange(event) {
-      this.selectedFile = event.target.files[0] || null;
+      this.selectedFiles = Array.from(event.target.files || []);
+      if (this.selectedFiles.length) {
+        this.uploadStatus = `${this.selectedFiles.length} file(s) selected.`;
+      }
+    },
+    clearFiles() {
+      this.selectedFiles = [];
+      const input = document.getElementById("file-input");
+      if (input) {
+        input.value = "";
+      }
+      this.uploadStatus = "";
     },
     async handleUpload() {
-      if (!this.selectedFile) {
-        this.uploadStatus = "Choose a file first.";
+      if (!this.selectedFiles.length) {
+        this.uploadStatus = "Choose at least one file.";
         return;
       }
 
       this.uploadStatus = "Uploading...";
-
-      const formData = new FormData();
-      formData.append("file", this.selectedFile);
-
-      try {
-        const res = await fetch(`${API_BASE}/api/ingest`, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          let message = "Upload failed";
-          try {
-            const errorJson = JSON.parse(errorText);
-            message = errorJson.detail || message;
-          } catch {
-            if (errorText) {
-              message = errorText;
-            }
-          }
-          throw new Error(message);
+      this.selectedFiles.forEach((file) => {
+        if (!this.documents.find((doc) => doc.name === file.name)) {
+          this.documents.push({ name: file.name, status: "queued" });
         }
+      });
 
-        const data = await res.json();
-        this.uploadStatus = `Ingested ${data.filename} with ${data.chunks} chunks.`;
-      } catch (error) {
-        this.uploadStatus = error.message;
+      for (const file of this.selectedFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        this.updateDocStatus(file.name, "uploading");
+        try {
+          const res = await fetch(`${API_BASE}/api/ingest`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            let message = "Upload failed";
+            try {
+              const errorJson = JSON.parse(errorText);
+              message = errorJson.detail || message;
+            } catch {
+              if (errorText) {
+                message = errorText;
+              }
+            }
+            throw new Error(message);
+          }
+
+          const data = await res.json();
+          this.updateDocStatus(file.name, `done (${data.chunks})`);
+        } catch (error) {
+          this.updateDocStatus(file.name, "failed");
+          this.uploadStatus = error.message;
+          return;
+        }
       }
+
+      this.uploadStatus = `Uploaded ${this.selectedFiles.length} document(s).`;
+      this.clearFiles();
     },
     async handleChat() {
       const trimmed = this.query.trim();
@@ -61,7 +87,11 @@ createApp({
       }
 
       this.chatStatus = "Thinking...";
-      this.responseText = "";
+      this.messages.push({
+        id: `user-${this.messageCounter++}`,
+        role: "user",
+        text: trimmed,
+      });
 
       try {
         const res = await fetch(`${API_BASE}/api/chat`, {
@@ -87,10 +117,21 @@ createApp({
         }
 
         const data = await res.json();
-        this.responseText = data.answer || "No response";
+        this.messages.push({
+          id: `assistant-${this.messageCounter++}`,
+          role: "assistant",
+          text: data.answer || "No response",
+        });
         this.chatStatus = "";
+        this.query = "";
       } catch (error) {
         this.chatStatus = error.message;
+      }
+    },
+    updateDocStatus(name, status) {
+      const doc = this.documents.find((item) => item.name === name);
+      if (doc) {
+        doc.status = status;
       }
     },
   },
