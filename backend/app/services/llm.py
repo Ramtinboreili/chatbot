@@ -17,6 +17,7 @@ def generate_response(system_prompt: str, user_prompt: str) -> str:
     url = f"{base}/chat/completions"
     headers = {
         "Content-Type": "application/json",
+        "Accept": "text/event-stream",
     }
     if LLM_API_KEY:
         headers["Authorization"] = f"Bearer {LLM_API_KEY}"
@@ -72,10 +73,10 @@ def stream_response(system_prompt: str, user_prompt: str):
 
     with requests.post(url, headers=headers, json=payload, stream=True, timeout=120) as response:
         response.raise_for_status()
-        for raw_line in response.iter_lines():
-            if not raw_line:
+        for line in response.iter_lines(decode_unicode=True, chunk_size=1):
+            if not line:
                 continue
-            line = raw_line.decode("utf-8").strip()
+            line = line.strip()
             if not line.startswith("data:"):
                 continue
             data = line[5:].strip()

@@ -30,4 +30,11 @@ def chat_stream(request: ChatRequest):
         except Exception as exc:
             yield f"event: error\ndata: {str(exc)}\n\n"
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
