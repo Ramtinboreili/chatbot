@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RAG Chat Workspace</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
       :root {
         --bg: #070b12;
@@ -29,7 +29,7 @@
 
       body {
         margin: 0;
-        font-family: "Vazirmatn", sans-serif;
+        font-family: "Noto Sans Arabic", sans-serif;
         color: var(--ink);
         background:
           radial-gradient(circle at 10% 20%, rgba(76, 194, 169, 0.18), transparent 45%),
@@ -334,7 +334,7 @@
         border: 1px solid var(--line);
         background: var(--surface-elevated);
         box-shadow: var(--shadow-soft);
-        font-family: "Vazirmatn", sans-serif;
+        font-family: "Noto Sans Arabic", sans-serif;
         line-height: 1.8;
         white-space: pre-wrap;
         unicode-bidi: plaintext;
@@ -554,7 +554,11 @@
             </div>
           </div>
           <form class="composer" @submit.prevent="handleChat">
-            <textarea v-model="query" placeholder="Ask a question about the uploaded documents..."></textarea>
+            <textarea
+              v-model="query"
+              placeholder="Ask a question about the uploaded documents..."
+              @keydown.enter.exact.prevent="handleChat"
+            ></textarea>
             <button type="submit" class="send-btn" aria-label="Send">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M3.4 20.2 21 12 3.4 3.8l.4 6.4 9.2 1.8-9.2 1.8-.4 6.4z" />

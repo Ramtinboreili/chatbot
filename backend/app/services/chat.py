@@ -1,5 +1,5 @@
 from app.services.embedding import embed_texts
-from app.services.llm import generate_response, stream_response
+from app.services.llm import generate_response
 from app.services.vector_store import vector_store
 
 SYSTEM_PROMPT = (
@@ -37,8 +37,3 @@ def answer_question(query: str) -> dict:
         "answer": response_text,
         "context_used": context_blocks,
     }
-
-
-def stream_answer_question(query: str):
-    prompt, _context_blocks = _build_prompt(query)
-    return stream_response(SYSTEM_PROMPT, prompt)
