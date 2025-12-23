@@ -62,12 +62,14 @@
         background: rgba(17, 24, 38, 0.75);
         border: 1px solid var(--line);
         box-shadow: var(--shadow-soft);
+        flex-wrap: wrap;
       }
 
       .brand {
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1 1 auto;
       }
 
       .brand-icon {
@@ -79,11 +81,13 @@
         place-items: center;
         color: var(--ink);
         font-weight: 700;
+        flex-shrink: 0;
       }
 
       .brand h1 {
         font-size: 1.4rem;
         margin: 0;
+        line-height: 1.2;
       }
 
       .brand p {
@@ -107,6 +111,7 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        flex-wrap: wrap;
       }
 
       header {
@@ -464,25 +469,81 @@
         }
       }
 
+      @media (max-width: 1024px) {
+        .page {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto 1fr;
+          gap: 16px;
+          padding: 16px;
+        }
+
+        .sidebar {
+          grid-row: 2;
+          position: static;
+        }
+
+        main {
+          grid-row: 3;
+        }
+
+        .chat-shell {
+          height: calc(100vh - 340px);
+        }
+      }
+
       @media (max-width: 720px) {
         .page {
           grid-template-columns: 1fr;
-          padding: 32px 16px 60px;
+          grid-template-rows: auto auto 1fr;
+          padding: 12px;
         }
         button {
           width: 100%;
         }
-        header {
-          grid-column: 1 / -1;
-        }
         .sidebar {
-          position: static;
+          padding: 16px;
         }
         .composer {
           grid-template-columns: 1fr;
         }
         .send-btn {
           width: 100%;
+        }
+        .topbar {
+          padding: 14px;
+        }
+        .brand h1 {
+          font-size: 1.15rem;
+        }
+        .brand p {
+          font-size: 0.8rem;
+        }
+        .chat-shell {
+          height: calc(100vh - 360px);
+          padding: 16px;
+        }
+        .chat-history {
+          padding: 6px;
+        }
+        .message-bubble {
+          max-width: 100%;
+        }
+        .doc-list {
+          max-height: 200px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .brand {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .pill-group {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        .chat-shell {
+          height: calc(100vh - 380px);
         }
       }
     </style>
