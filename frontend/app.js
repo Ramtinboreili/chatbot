@@ -13,7 +13,11 @@ createApp({
       documents: [],
       messageCounter: 0,
       uploadsCollapsed: false,
+      modelName: "",
     };
+  },
+  mounted() {
+    this.loadConfig();
   },
   methods: {
     getTextDirection(text) {
@@ -49,7 +53,19 @@ createApp({
     onFileChange(event) {
       this.selectedFiles = Array.from(event.target.files || []);
       if (this.selectedFiles.length) {
-        this.uploadStatus = `${this.selectedFiles.length} فایل انتخاب شد.`;
+        this.uploadStatus = `${this.selectedFiles.length} file(s) selected.`;
+      }
+    },
+    async loadConfig() {
+      try {
+        const res = await fetch(`${API_BASE}/api/config`);
+        if (!res.ok) {
+          return;
+        }
+        const data = await res.json();
+        this.modelName = data.llm_model || "";
+      } catch {
+        this.modelName = "";
       }
     },
     clearFiles() {
@@ -120,7 +136,7 @@ createApp({
         return;
       }
 
-      this.chatStatus = "Thinking...";
+      this.chatStatus = "";
       this.messages.push({
         id: `user-${this.messageCounter++}`,
         role: "user",
@@ -130,7 +146,15 @@ createApp({
       this.scrollToBottom();
 
       try {
-        const res = await fetch(`${API_BASE}/api/chat`, {
+        const assistantMessage = {
+          id: `assistant-${this.messageCounter++}`,
+          role: "assistant",
+          text: "Thinking...",
+        };
+        this.messages.push(assistantMessage);
+        this.scrollToBottom();
+
+        const res = await fetch(`${API_BASE}/api/chat/stream`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -152,14 +176,52 @@ createApp({
           throw new Error(message);
         }
 
-        const data = await res.json();
-        this.messages.push({
-          id: `assistant-${this.messageCounter++}`,
-          role: "assistant",
-          text: data.answer || "No response.",
-        });
-        this.chatStatus = "";
-        this.scrollToBottom();
+        if (!res.body) {
+          const data = await res.json();
+          assistantMessage.text = data.answer || "No response.";
+          this.scrollToBottom();
+          return;
+        }
+
+        assistantMessage.text = "";
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            break;
+          }
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() || "";
+
+          for (const part of parts) {
+            const lines = part.split("\n");
+            let eventType = "message";
+            let data = "";
+            for (const line of lines) {
+              if (line.startsWith("event:")) {
+                eventType = line.replace("event:", "").trim();
+              }
+              if (line.startsWith("data:")) {
+                const chunk = line.slice(5);
+                data += chunk.startsWith(" ") ? chunk.slice(1) : chunk;
+              }
+            }
+            if (!data) {
+              continue;
+            }
+            if (eventType === "error") {
+              assistantMessage.text = `Error: ${data}`;
+              this.scrollToBottom();
+              return;
+            }
+            assistantMessage.text += data;
+            this.scrollToBottom();
+          }
+        }
       } catch (error) {
         this.chatStatus = error.message;
       }

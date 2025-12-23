@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,3 +24,10 @@ app.include_router(chat_router, prefix="/api")
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+def api_config():
+    return {
+        "llm_model": os.getenv("LLM_MODEL", ""),
+    }

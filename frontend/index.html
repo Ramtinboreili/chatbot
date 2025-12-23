@@ -103,6 +103,12 @@
         border: 1px solid rgba(76, 194, 169, 0.35);
       }
 
+      .pill-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
       header {
         display: none;
       }
@@ -173,7 +179,7 @@
         color: var(--ink);
         font-family: "JetBrains Mono", monospace;
         font-size: 0.95rem;
-        direction: rtl;
+        direction: auto;
       }
 
       button {
@@ -291,9 +297,11 @@
         background: rgba(17, 24, 38, 0.7);
         border: 1px solid var(--line);
         border-radius: 26px;
-        padding: 20px;
+        padding: 22px;
         box-shadow: var(--shadow);
         position: relative;
+        min-height: 0;
+        overflow: hidden;
       }
 
       main {
@@ -301,6 +309,7 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        min-height: 0;
       }
 
       .chat-history {
@@ -310,6 +319,7 @@
         overflow: auto;
         padding: 8px 10px;
         min-height: 0;
+        flex: 1;
       }
 
       .message-row {
@@ -372,7 +382,10 @@
 
       .composer textarea {
         flex: 1;
-        min-height: 80px;
+        height: 88px;
+        min-height: 88px;
+        max-height: 88px;
+        resize: none;
       }
 
       .send-btn {
@@ -485,7 +498,10 @@
             <p>Upload files, then chat with full history — all on your server.</p>
           </div>
         </div>
-        <div class="pill">Local AI Stack</div>
+        <div class="pill-group">
+          <div class="pill" v-if="modelName">Model: {{ modelName }}</div>
+          <div class="pill">Local AI Stack</div>
+        </div>
       </div>
       <aside class="sidebar">
         <div>
