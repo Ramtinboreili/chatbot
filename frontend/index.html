@@ -42,15 +42,17 @@
       .page {
         display: grid;
         grid-template-columns: 300px 1fr;
-        gap: 28px;
+        grid-template-rows: auto 1fr;
+        gap: 24px;
         height: 100vh;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 18px 20px 18px;
+        max-width: 100%;
+        margin: 0;
+        padding: 18px;
       }
 
       .topbar {
         grid-column: 1 / -1;
+        grid-row: 1;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -84,6 +86,12 @@
         margin: 0;
       }
 
+      .brand p {
+        margin: 2px 0 0;
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+      }
+
       .pill {
         padding: 6px 12px;
         border-radius: 999px;
@@ -96,12 +104,7 @@
       }
 
       header {
-        grid-column: 2 / -1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin: 10px 0 6px;
-        animation: fadeIn 0.7s ease-out;
+        display: none;
       }
 
       .tag {
@@ -223,6 +226,7 @@
       }
 
       .sidebar {
+        grid-row: 2;
         position: sticky;
         top: 96px;
         align-self: start;
@@ -283,22 +287,29 @@
         display: grid;
         grid-template-rows: auto 1fr auto;
         gap: 14px;
-        min-height: 640px;
+        height: 100%;
         background: rgba(17, 24, 38, 0.7);
         border: 1px solid var(--line);
         border-radius: 26px;
-        padding: 18px;
+        padding: 20px;
         box-shadow: var(--shadow);
         position: relative;
+      }
+
+      main {
+        grid-row: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
       }
 
       .chat-history {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        max-height: calc(100vh - 360px);
         overflow: auto;
-        padding-left: 6px;
+        padding: 8px 10px;
+        min-height: 0;
       }
 
       .message-row {
@@ -355,7 +366,7 @@
         position: sticky;
         bottom: 0;
         background: linear-gradient(180deg, rgba(17, 24, 38, 0.1), rgba(17, 24, 38, 0.9));
-        padding-top: 8px;
+        padding-top: 12px;
         border-top: 1px solid var(--line);
       }
 
@@ -471,6 +482,7 @@
           <div>
             <div class="tag">Self-hosted RAG</div>
             <h1>RAG Chat Workspace</h1>
+            <p>Upload files, then chat with full history — all on your server.</p>
           </div>
         </div>
         <div class="pill">Local AI Stack</div>
@@ -502,18 +514,12 @@
       </aside>
 
       <main>
-        <header>
-          <span class="tag">Self-hosted RAG</span>
-          <h1>Chat with your documents</h1>
-          <p>Upload your files, then ask questions with full chat history. Everything runs on your server.</p>
-        </header>
-
         <section class="chat-shell">
           <div class="response-title">
             <h2>Chat</h2>
             <span class="chip">RAG Answers</span>
           </div>
-          <div class="chat-history">
+          <div class="chat-history" ref="chatHistory">
             <div v-if="messages.length === 0" class="status">No messages yet. Ask your first question.</div>
             <div v-for="message in messages" :key="message.id" :class="['message-row', message.role]">
               <div class="message-bubble">

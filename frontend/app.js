@@ -126,6 +126,8 @@ createApp({
         role: "user",
         text: trimmed,
       });
+      this.query = "";
+      this.scrollToBottom();
 
       try {
         const res = await fetch(`${API_BASE}/api/chat`, {
@@ -157,10 +159,18 @@ createApp({
           text: data.answer || "No response.",
         });
         this.chatStatus = "";
-        this.query = "";
+        this.scrollToBottom();
       } catch (error) {
         this.chatStatus = error.message;
       }
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const history = this.$refs.chatHistory;
+        if (history) {
+          history.scrollTop = history.scrollHeight;
+        }
+      });
     },
     updateDocStatus(name, status) {
       const doc = this.documents.find((item) => item.name === name);
