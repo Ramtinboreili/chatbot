@@ -278,7 +278,7 @@
         transform: translateX(-100%);
         transition: transform 0.2s ease;
         z-index: 50;
-        padding: 18px;
+        padding: 14px;
         display: flex;
         flex-direction: column;
         gap: 18px;
@@ -297,7 +297,7 @@
       .drawer-scroll {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 14px;
         overflow-y: auto;
         padding-right: 6px;
         flex: 1;
@@ -316,14 +316,39 @@
         background: var(--surface-elevated);
         border: 1px solid var(--line);
         border-radius: 18px;
-        padding: 14px;
+        padding: 12px;
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }
 
       .stack {
         display: grid;
-        gap: 10px;
+        gap: 8px;
+      }
+
+      .drawer-panel .tag,
+      .drawer-panel .status,
+      .drawer-panel .pill {
+        font-size: 0.72rem;
+      }
+
+      .drawer-panel label {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+      }
+
+      .drawer-panel input[type="email"],
+      .drawer-panel input[type="password"],
+      .drawer-panel input[type="text"],
+      .drawer-panel input[type="file"] {
+        font-size: 0.82rem;
+        padding: 8px 10px;
+      }
+
+      .drawer-panel button {
+        margin-top: 8px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
       }
 
       .mobile-hide {
@@ -720,6 +745,9 @@
         <div class="pill-group">
           <div class="pill" v-if="modelName">Model: {{ modelName }}</div>
           <div class="pill">Local AI Stack</div>
+          <button v-if="!currentUser" class="icon-btn" type="button" @click="toggleDrawer">
+            Sign in / Sign up
+          </button>
           <button class="icon-btn drawer-trigger" type="button" @click="toggleDrawer">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
               <path
