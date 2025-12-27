@@ -35,9 +35,14 @@ createApp({
           .replace(/>/g, "&gt;");
       let html = escapeHtml(text);
 
+      const codeBlocks = [];
       html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-        return `<pre><code>${code.trim()}</code></pre>`;
+        const token = `@@CODEBLOCK_${codeBlocks.length}@@`;
+        codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
+        return token;
       });
+
+      html = this.convertTables(html);
       html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
       html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
       html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
@@ -46,10 +51,74 @@ createApp({
       html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
       html = html.replace(/^\s*[-*] (.*)$/gm, "<li>$1</li>");
       html = html.replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>");
-      html = html.replace(/\n{2,}/g, "</p><p>");
-      html = `<p>${html}</p>`;
-      html = html.replace(/<p>\s*<\/p>/g, "");
+      html = html.replace(/@@CODEBLOCK_(\d+)@@/g, (match, index) => {
+        return codeBlocks[Number(index)] || "";
+      });
+
+      const blocks = html
+        .split(/\n{2,}/)
+        .map((block) => block.trim())
+        .filter(Boolean);
+      html = blocks
+        .map((block) => {
+          if (/^<(h1|h2|h3|ul|pre|table)/.test(block)) {
+            return block;
+          }
+          return `<p>${block}</p>`;
+        })
+        .join("");
+
       return html;
+    },
+    convertTables(text) {
+      const lines = text.split(/\r?\n/);
+      const output = [];
+      const isSeparator = (line) =>
+        /^\s*\|?(?:\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?\s*$/.test(line);
+      const parseRow = (line) =>
+        line
+          .trim()
+          .replace(/^\|/, "")
+          .replace(/\|$/, "")
+          .split("|")
+          .map((cell) => cell.trim());
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i];
+        const next = lines[i + 1];
+        const isHeader = line && line.includes("|") && next && isSeparator(next);
+        if (!isHeader) {
+          output.push(line);
+          continue;
+        }
+
+        const headers = parseRow(line);
+        const rows = [];
+        i += 1;
+
+        for (let j = i + 1; j < lines.length; j += 1) {
+          const rowLine = lines[j];
+          if (!rowLine || !rowLine.includes("|")) {
+            i = j - 1;
+            break;
+          }
+          rows.push(parseRow(rowLine));
+          i = j;
+        }
+
+        const headHtml = `<thead><tr>${headers
+          .map((cell) => `<th>${cell}</th>`)
+          .join("")}</tr></thead>`;
+        const bodyHtml = `<tbody>${rows
+          .map(
+            (row) =>
+              `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`
+          )
+          .join("")}</tbody>`;
+        output.push(`<table>${headHtml}${bodyHtml}</table>`);
+      }
+
+      return output.join("\n");
     },
     onFileChange(event) {
       this.selectedFiles = Array.from(event.target.files || []);

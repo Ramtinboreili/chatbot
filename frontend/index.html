@@ -59,7 +59,7 @@
         gap: 16px;
         padding: 16px 20px;
         border-radius: 22px;
-        background: rgba(17, 24, 38, 0.75);
+        background: rgba(17, 24, 38, 0.9);
         border: 1px solid var(--line);
         box-shadow: var(--shadow-soft);
         flex-wrap: wrap;
@@ -522,6 +522,32 @@
         direction: ltr;
       }
 
+      .markdown table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.95rem;
+        display: block;
+        overflow-x: auto;
+      }
+
+      .markdown thead {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .markdown th,
+      .markdown td {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+        white-space: nowrap;
+      }
+
+      .markdown tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
       .markdown ul {
         padding-right: 18px;
       }
@@ -579,6 +605,7 @@
       @media (max-width: 720px) {
         body {
           overflow-y: auto;
+          font-size: 14px;
         }
         .page {
           grid-template-columns: 1fr;
@@ -605,6 +632,7 @@
           position: sticky;
           top: 12px;
           z-index: 20;
+          background: var(--surface-strong);
         }
         .brand-icon {
           width: 36px;
@@ -640,6 +668,10 @@
         }
         .message-bubble {
           max-width: 100%;
+          font-size: 0.9rem;
+        }
+        .composer textarea {
+          font-size: 0.9rem;
         }
         .doc-list {
           max-height: 200px;
