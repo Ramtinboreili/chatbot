@@ -252,6 +252,66 @@
         height: fit-content;
       }
 
+      .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 8, 14, 0.7);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 40;
+      }
+
+      .drawer-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .drawer-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(320px, 85vw);
+        height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        z-index: 50;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .drawer-panel.is-open {
+        transform: translateX(0);
+      }
+
+      .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .icon-btn {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        border-radius: 14px;
+        padding: 8px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .drawer-trigger {
+        display: inline-flex;
+      }
+
       .sidebar h2 {
         margin: 0;
         font-size: 1.1rem;
@@ -298,7 +358,6 @@
         display: grid;
         grid-template-rows: auto 1fr auto;
         gap: 14px;
-        height: 100%;
         background: rgba(17, 24, 38, 0.7);
         border: 1px solid var(--line);
         border-radius: 26px;
@@ -307,6 +366,7 @@
         position: relative;
         min-height: 0;
         overflow: hidden;
+        flex: 1;
       }
 
       main {
@@ -478,30 +538,29 @@
         }
 
         .sidebar {
-          grid-row: 2;
-          position: static;
+          display: none;
         }
 
         main {
-          grid-row: 3;
+          grid-row: 2;
         }
 
         .chat-shell {
-          height: calc(100vh - 340px);
+          min-height: 80vh;
         }
       }
 
       @media (max-width: 720px) {
         .page {
           grid-template-columns: 1fr;
-          grid-template-rows: auto auto 1fr;
+          grid-template-rows: auto 1fr;
           padding: 12px;
         }
         button {
           width: 100%;
         }
         .sidebar {
-          padding: 16px;
+          display: none;
         }
         .composer {
           grid-template-columns: 1fr;
@@ -519,7 +578,6 @@
           font-size: 0.8rem;
         }
         .chat-shell {
-          height: calc(100vh - 360px);
           padding: 16px;
         }
         .chat-history {
@@ -543,7 +601,7 @@
           justify-content: flex-start;
         }
         .chat-shell {
-          height: calc(100vh - 380px);
+          min-height: 80vh;
         }
       }
     </style>
@@ -562,6 +620,15 @@
         <div class="pill-group">
           <div class="pill" v-if="modelName">Model: {{ modelName }}</div>
           <div class="pill">Local AI Stack</div>
+          <button class="icon-btn drawer-trigger" type="button" @click="toggleDrawer">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z"
+              />
+            </svg>
+            Files
+          </button>
         </div>
       </div>
       <aside class="sidebar">
@@ -569,18 +636,6 @@
           <span class="tag">Document Vault</span>
           <h2>Uploaded files</h2>
         </div>
-        <form @submit.prevent="handleUpload">
-          <button type="button" class="ghost" @click="toggleUploads">
-            {{ uploadsCollapsed ? 'Expand uploads' : 'Collapse uploads' }}
-          </button>
-          <div v-if="!uploadsCollapsed">
-            <label for="file-input">Add documents</label>
-            <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
-            <button type="submit">Upload & Ingest</button>
-            <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
-            <p class="status">{{ uploadStatus }}</p>
-          </div>
-        </form>
         <div class="doc-list">
           <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
           <div v-for="doc in documents" :key="doc.name" class="doc-item">
@@ -629,6 +684,36 @@
           <p class="status">{{ chatStatus }}</p>
         </section>
       </main>
+
+      <div :class="['drawer-overlay', drawerOpen ? 'is-open' : '']" @click="toggleDrawer"></div>
+      <aside :class="['drawer-panel', drawerOpen ? 'is-open' : '']">
+        <div class="drawer-header">
+          <div>
+            <span class="tag">Document Vault</span>
+            <h2>Uploaded files</h2>
+          </div>
+          <button class="icon-btn" type="button" @click="toggleDrawer">Close</button>
+        </div>
+        <form @submit.prevent="handleUpload">
+          <button type="button" class="ghost" @click="toggleUploads">
+            {{ uploadsCollapsed ? 'Expand uploads' : 'Collapse uploads' }}
+          </button>
+          <div v-if="!uploadsCollapsed">
+            <label for="file-input">Add documents</label>
+            <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
+            <button type="submit">Upload & Ingest</button>
+            <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
+            <p class="status">{{ uploadStatus }}</p>
+          </div>
+        </form>
+        <div class="doc-list">
+          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
+          <div v-for="doc in documents" :key="doc.name" class="doc-item">
+            <span class="doc-name">{{ doc.name }}</span>
+            <span class="doc-status">{{ doc.status }}</span>
+          </div>
+        </div>
+      </aside>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>

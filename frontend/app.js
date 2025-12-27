@@ -14,6 +14,7 @@ createApp({
       messageCounter: 0,
       uploadsCollapsed: false,
       modelName: "",
+      drawerOpen: false,
     };
   },
   mounted() {
@@ -78,6 +79,9 @@ createApp({
     },
     toggleUploads() {
       this.uploadsCollapsed = !this.uploadsCollapsed;
+    },
+    toggleDrawer() {
+      this.drawerOpen = !this.drawerOpen;
     },
     async handleUpload() {
       if (!this.selectedFiles.length) {
