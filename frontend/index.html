@@ -296,6 +296,32 @@
         justify-content: space-between;
       }
 
+      .drawer-scroll {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        overflow-y: auto;
+        padding-right: 6px;
+        flex: 1;
+      }
+
+      .drawer-meta {
+        display: grid;
+        gap: 10px;
+      }
+
+      .drawer-meta .pill {
+        width: fit-content;
+      }
+
+      .mobile-hide {
+        display: block;
+      }
+
+      .mobile-only {
+        display: none;
+      }
+
       .icon-btn {
         border: 1px solid var(--line);
         background: rgba(255, 255, 255, 0.06);
@@ -551,10 +577,15 @@
       }
 
       @media (max-width: 720px) {
+        body {
+          overflow-y: auto;
+        }
         .page {
           grid-template-columns: 1fr;
           grid-template-rows: auto 1fr;
           padding: 12px;
+          height: auto;
+          min-height: 100vh;
         }
         button {
           width: 100%;
@@ -569,7 +600,30 @@
           width: 100%;
         }
         .topbar {
-          padding: 14px;
+          padding: 10px 12px;
+          border-radius: 16px;
+          position: sticky;
+          top: 12px;
+          z-index: 20;
+        }
+        .brand-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 12px;
+        }
+        .brand h1 {
+          font-size: 1rem;
+        }
+        .brand p,
+        .tag,
+        .pill-group .pill {
+          display: none;
+        }
+        .mobile-only {
+          display: block;
+        }
+        .mobile-hide {
+          display: none;
         }
         .brand h1 {
           font-size: 1.15rem;
@@ -579,6 +633,7 @@
         }
         .chat-shell {
           padding: 16px;
+          min-height: 70vh;
         }
         .chat-history {
           padding: 6px;
@@ -614,7 +669,7 @@
           <div>
             <div class="tag">Self-hosted RAG</div>
             <h1>RAG Chat Workspace</h1>
-            <p>Upload files, then chat with full history — all on your server.</p>
+            <p class="mobile-hide">Upload files, then chat with full history — all on your server.</p>
           </div>
         </div>
         <div class="pill-group">
@@ -694,23 +749,33 @@
           </div>
           <button class="icon-btn" type="button" @click="toggleDrawer">Close</button>
         </div>
-        <form @submit.prevent="handleUpload">
-          <button type="button" class="ghost" @click="toggleUploads">
-            {{ uploadsCollapsed ? 'Expand uploads' : 'Collapse uploads' }}
-          </button>
-          <div v-if="!uploadsCollapsed">
-            <label for="file-input">Add documents</label>
-            <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
-            <button type="submit">Upload & Ingest</button>
-            <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
-            <p class="status">{{ uploadStatus }}</p>
+        <div class="drawer-scroll">
+          <div class="drawer-meta">
+            <div class="mobile-only">
+              <div class="tag">Self-hosted RAG</div>
+              <p class="status">Upload files, then chat with full history — all on your server.</p>
+            </div>
+            <div class="pill" v-if="modelName">Model: {{ modelName }}</div>
+            <div class="pill">Local AI Stack</div>
           </div>
-        </form>
-        <div class="doc-list">
-          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
-          <div v-for="doc in documents" :key="doc.name" class="doc-item">
-            <span class="doc-name">{{ doc.name }}</span>
-            <span class="doc-status">{{ doc.status }}</span>
+          <form @submit.prevent="handleUpload">
+            <button type="button" class="ghost" @click="toggleUploads">
+              {{ uploadsCollapsed ? 'Expand uploads' : 'Collapse uploads' }}
+            </button>
+            <div v-if="!uploadsCollapsed">
+              <label for="file-input">Add documents</label>
+              <input type="file" id="file-input" accept=".txt,.md,.pdf" multiple @change="onFileChange" />
+              <button type="submit">Upload & Ingest</button>
+              <button type="button" class="ghost" @click="clearFiles">Clear selection</button>
+              <p class="status">{{ uploadStatus }}</p>
+            </div>
+          </form>
+          <div class="doc-list">
+            <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
+            <div v-for="doc in documents" :key="doc.name" class="doc-item">
+              <span class="doc-name">{{ doc.name }}</span>
+              <span class="doc-status">{{ doc.status }}</span>
+            </div>
           </div>
         </div>
       </aside>
