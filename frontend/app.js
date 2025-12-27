@@ -15,10 +15,16 @@ createApp({
       uploadsCollapsed: false,
       modelName: "",
       drawerOpen: false,
+      authEmail: "",
+      authPassword: "",
+      authStatus: "",
+      authToken: "",
+      currentUser: null,
     };
   },
   mounted() {
     this.loadConfig();
+    this.restoreSession();
   },
   methods: {
     getTextDirection(text) {
@@ -138,6 +144,111 @@ createApp({
         this.modelName = "";
       }
     },
+    async restoreSession() {
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        return;
+      }
+      this.authToken = token;
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: this.authHeaders(),
+        });
+        if (!res.ok) {
+          this.clearSession();
+          return;
+        }
+        const data = await res.json();
+        this.currentUser = data.user || null;
+      } catch {
+        this.clearSession();
+      }
+    },
+    authHeaders() {
+      return this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {};
+    },
+    saveSession(token, user) {
+      this.authToken = token;
+      this.currentUser = user;
+      localStorage.setItem("auth_token", token);
+      this.authStatus = "";
+      this.authPassword = "";
+    },
+    clearSession() {
+      this.authToken = "";
+      this.currentUser = null;
+      localStorage.removeItem("auth_token");
+    },
+    async signIn() {
+      if (!this.authEmail || !this.authPassword) {
+        this.authStatus = "Enter email and password.";
+        return;
+      }
+      this.authStatus = "Signing in...";
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.authEmail,
+            password: this.authPassword,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          this.authStatus = data.detail || "Sign in failed.";
+          return;
+        }
+        const data = await res.json();
+        this.saveSession(data.token, data.user);
+      } catch (error) {
+        this.authStatus = error.message;
+      }
+    },
+    async signUp() {
+      if (!this.authEmail || !this.authPassword) {
+        this.authStatus = "Enter email and password.";
+        return;
+      }
+      this.authStatus = "Creating account...";
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/signup`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.authEmail,
+            password: this.authPassword,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          this.authStatus = data.detail || "Sign up failed.";
+          return;
+        }
+        const data = await res.json();
+        this.saveSession(data.token, data.user);
+      } catch (error) {
+        this.authStatus = error.message;
+      }
+    },
+    async signOut() {
+      if (!this.authToken) {
+        return;
+      }
+      try {
+        await fetch(`${API_BASE}/api/auth/logout`, {
+          method: "POST",
+          headers: this.authHeaders(),
+        });
+      } catch {
+        // Ignore logout errors.
+      }
+      this.clearSession();
+    },
     clearFiles() {
       this.selectedFiles = [];
       const input = document.getElementById("file-input");
@@ -153,6 +264,10 @@ createApp({
       this.drawerOpen = !this.drawerOpen;
     },
     async handleUpload() {
+      if (!this.authToken) {
+        this.uploadStatus = "Sign in to upload files.";
+        return;
+      }
       if (!this.selectedFiles.length) {
         this.uploadStatus = "Choose at least one file.";
         return;
@@ -174,6 +289,7 @@ createApp({
           const res = await fetch(`${API_BASE}/api/ingest`, {
             method: "POST",
             body: formData,
+            headers: this.authHeaders(),
           });
 
           if (!res.ok) {
@@ -208,6 +324,10 @@ createApp({
         this.chatStatus = "Type a question first.";
         return;
       }
+      if (!this.authToken) {
+        this.chatStatus = "Sign in to chat.";
+        return;
+      }
 
       this.chatStatus = "Thinking...";
       this.messages.push({
@@ -223,6 +343,7 @@ createApp({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...this.authHeaders(),
           },
           body: JSON.stringify({ query: trimmed }),
         });

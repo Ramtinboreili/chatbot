@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.ingest import router as ingest_router
 from app.routes.chat import router as chat_router
+from app.routes.auth import router as auth_router
+from app.services.auth import init_auth_db
 
 app = FastAPI(title="Minimal RAG API")
 
@@ -19,6 +21,12 @@ app.add_middleware(
 
 app.include_router(ingest_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+
+
+@app.on_event("startup")
+def startup():
+    init_auth_db()
 
 
 @app.get("/health")

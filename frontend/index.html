@@ -30,6 +30,7 @@
       body {
         margin: 0;
         font-family: "Noto Sans Arabic", sans-serif;
+        font-size: 15px;
         color: var(--ink);
         background:
           radial-gradient(circle at 10% 20%, rgba(76, 194, 169, 0.18), transparent 45%),
@@ -41,7 +42,7 @@
 
       .page {
         display: grid;
-        grid-template-columns: 300px 1fr;
+        grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
         gap: 24px;
         height: 100vh;
@@ -85,7 +86,7 @@
       }
 
       .brand h1 {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
         margin: 0;
         line-height: 1.2;
       }
@@ -93,13 +94,13 @@
       .brand p {
         margin: 2px 0 0;
         color: var(--ink-muted);
-        font-size: 0.9rem;
+        font-size: 0.82rem;
       }
 
       .pill {
         padding: 6px 12px;
         border-radius: 999px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         background: rgba(76, 194, 169, 0.12);
@@ -127,7 +128,7 @@
       }
 
       h1 {
-        font-size: clamp(2.4rem, 4vw, 3.4rem);
+        font-size: clamp(2rem, 3.5vw, 3rem);
         margin: 0;
       }
 
@@ -155,7 +156,7 @@
 
       .card h2 {
         margin-top: 0;
-        font-size: 1.2rem;
+        font-size: 1.05rem;
       }
 
       label {
@@ -174,6 +175,19 @@
         color: var(--ink-muted);
       }
 
+      input[type="email"],
+      input[type="password"],
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface-elevated);
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 0.9rem;
+      }
+
       textarea {
         width: 100%;
         min-height: 140px;
@@ -183,7 +197,7 @@
         background: var(--surface-elevated);
         color: var(--ink);
         font-family: "JetBrains Mono", monospace;
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         direction: auto;
       }
 
@@ -206,7 +220,7 @@
       }
 
       .status {
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         color: var(--ink-muted);
         margin-top: 8px;
       }
@@ -233,23 +247,7 @@
         color: var(--ink-muted);
         padding: 4px 10px;
         border-radius: 999px;
-        font-size: 0.75rem;
-      }
-
-      .sidebar {
-        grid-row: 2;
-        position: sticky;
-        top: 96px;
-        align-self: start;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 20px;
-        box-shadow: var(--shadow-soft);
-        height: fit-content;
+        font-size: 0.7rem;
       }
 
       .drawer-overlay {
@@ -312,6 +310,20 @@
 
       .drawer-meta .pill {
         width: fit-content;
+      }
+
+      .drawer-section {
+        background: var(--surface-elevated);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
       }
 
       .mobile-hide {
@@ -427,6 +439,7 @@
         box-shadow: var(--shadow-soft);
         font-family: "Noto Sans Arabic", sans-serif;
         line-height: 1.8;
+        font-size: 0.95rem;
         white-space: pre-wrap;
         unicode-bidi: plaintext;
       }
@@ -718,20 +731,6 @@
           </button>
         </div>
       </div>
-      <aside class="sidebar">
-        <div>
-          <span class="tag">Document Vault</span>
-          <h2>Uploaded files</h2>
-        </div>
-        <div class="doc-list">
-          <div v-if="documents.length === 0" class="status">No files yet. Upload one or more documents.</div>
-          <div v-for="doc in documents" :key="doc.name" class="doc-item">
-            <span class="doc-name">{{ doc.name }}</span>
-            <span class="doc-status">{{ doc.status }}</span>
-          </div>
-        </div>
-      </aside>
-
       <main>
         <section class="chat-shell">
           <div class="response-title">
@@ -789,6 +788,24 @@
             </div>
             <div class="pill" v-if="modelName">Model: {{ modelName }}</div>
             <div class="pill">Local AI Stack</div>
+          </div>
+          <div class="drawer-section">
+            <span class="tag">Account</span>
+            <div v-if="currentUser">
+              <div class="status">Signed in as {{ currentUser.email }}</div>
+              <button type="button" class="ghost" @click="signOut">Sign out</button>
+            </div>
+            <div v-else class="stack">
+              <label>Email</label>
+              <input type="email" v-model="authEmail" placeholder="you@example.com" />
+              <label>Password</label>
+              <input type="password" v-model="authPassword" placeholder="••••••••" />
+              <div class="stack">
+                <button type="button" @click="signIn">Sign in</button>
+                <button type="button" class="ghost" @click="signUp">Sign up</button>
+              </div>
+              <p class="status">{{ authStatus }}</p>
+            </div>
           </div>
           <form @submit.prevent="handleUpload">
             <button type="button" class="ghost" @click="toggleUploads">

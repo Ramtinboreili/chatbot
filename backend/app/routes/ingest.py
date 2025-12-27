@@ -1,12 +1,13 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 
 from app.services.ingestion import ingest_document
+from app.services.auth import get_current_user
 
 router = APIRouter()
 
 
 @router.post("/ingest")
-async def ingest_file(file: UploadFile = File(...)):
+async def ingest_file(file: UploadFile = File(...), user=Depends(get_current_user)):
     if file.filename is None:
         raise HTTPException(status_code=400, detail="Missing filename")
 
